@@ -52,8 +52,8 @@ public class LimelightDriveWithVision
 
         if (Hardware.visionInterface.getDistanceFromTarget() >= distance)
             {
-
-            if(adjustDriveIfOff(offness, ACCEPTABLE_OFFNESS_ONE,speed, ADJUST_PROPORTION_2019))   
+            boolean isOutofAcceptableOffnessBounds = adjustDriveIfOff(offness, ACCEPTABLE_OFFNESS_ONE,speed, ADJUST_PROPORTION_2019);
+            if(isOutofAcceptableOffnessBounds)   
             {
                 
             }
@@ -110,7 +110,9 @@ public class LimelightDriveWithVision
                     && Hardware.frontUltraSonic.getDistanceFromNearestBumper() > OVERRIDE_ULTRASONIC_DISTANCE_SHORT)
                     || !overrideUltrasonic)
                 {
-                 if(adjustDriveIfOff(offness, ACCEPTABLE_OFFNESS_ONE,speed, ADJUST_PROPORTION_2019))   
+                
+                 boolean isOutofAcceptableOffnessBounds = adjustDriveIfOff(offness, ACCEPTABLE_OFFNESS_ONE,speed, ADJUST_PROPORTION_2019)
+                 if(isOutofAcceptableOffnessBounds)   
                 {
 
                 }
@@ -152,13 +154,16 @@ public class LimelightDriveWithVision
         // right move speed
         double adjustmentValueLeft = 0;
         
-         if(adjustDriveIfOff(offness, ACCEPTABLE_OFFNESS_ONE, 1.0, ADJUST_PROPORTION_2019_ALIGN))   
+         boolean isOutofAcceptableOffnessBounds = adjustDriveIfOff(offness, ACCEPTABLE_OFFNESS_ONE, 1.0, ADJUST_PROPORTION_2019_ALIGN);
+        
+         if(isOutofAcceptableOffnessBounds)   
             {
                 
             }
         else
             {
-             if(adjustDriveIfOff(offness, ACCEPTABLE_OFFNESS_TWO, 1.0, ADJUST_PROPORTION_LOW_DISTANCE))   
+             boolean isOutofAcceptableOffnessBounds2 = adjustDriveIfOff(offness, ACCEPTABLE_OFFNESS_TWO, 1.0, ADJUST_PROPORTION_LOW_DISTANCE)
+             if(isOutofAcceptableOffnessBounds2)   
             {
                 
             }
@@ -173,26 +178,21 @@ public class LimelightDriveWithVision
     }
     
     
-    //extracted repeated functionality for drivetrain output? adjusting the position of the robot?
+    //@author Kyle Good
+    //extracted repeated functionality for drivetrain output? adjusting the orientation of the robot?
+    //if, the offness is outside of the bounds of acceptableOffness, then
+    //adjust the orientation of the robot by a factor of offness to the left or right depending on whether it is left-off or right-off
     public boolean adjustDriveIfOff(double offness, double acceptableOffness, double speed, double adjustProportion)
     {
          if (offness < -acceptableOffness)
             {
-            // adjust the speed for the left and right motors based off their offness and a
-            // preset proportional value
-            adjustmentValueLeft = -(Math.abs(offness) * adjustProportion);
-            adjustmentValueRight = (Math.abs(offness) * adjustProportion);
-            // drive raw so that we dont have to write addition gearing code in teleop
-            Hardware.transmission.driveRaw(adjustmentValueLeft, adjustmentValueRight);
+          adjustLeftTrueRightFalse(true,  offness,  speed,  adjustProportion)
             }
 
         else if (offness > acceptableOffness)
             {
 
-            adjustmentValueLeft = (Math.abs(offness) * adjustProportion);
-            adjustmentValueRight = -(Math.abs(offness) * adjustProportion);
-
-            Hardware.transmission.driveRaw(adjustmentValueLeft, adjustmentValueRight);
+          adjustLeftTrueRightFalse(false,  offness,  speed,  adjustProportion)
             }
         else
         {
@@ -200,7 +200,9 @@ public class LimelightDriveWithVision
         }
         return true;
     }
-    
+    //@author Kyle Good
+    //extracted repeated functionality for drivetrain output? adjusting the orientation of the robot?
+    //adjust the orientation of the robot 
     public boolean adjustLeftTrueRightFalse(boolean leftTrueRightFalse, double offness, double speed, double adjustProportion)
     {
         int directorLeftRight = leftTrueRightFalse?-1:1;
@@ -210,9 +212,13 @@ public class LimelightDriveWithVision
         // right move speed
         double adjustmentValueLeft = 0;
         
+        
+          // adjust the speed for the left and right motors based off their offness and a
+            // preset proportional value
+        
           adjustmentValueLeft = 1*directorLeftRight*(Math.abs(offness) * adjustProportion);
             adjustmentValueRight = -1*directorLeftRight*(Math.abs(offness) * adjustProportion);
-
+            // drive raw so that we dont have to write addition gearing code in teleop
             Hardware.transmission.driveRaw(adjustmentValueLeft, adjustmentValueRight);
     }
     
